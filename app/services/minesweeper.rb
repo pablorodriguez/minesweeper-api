@@ -2,13 +2,13 @@ class Minesweeper
 
   ADJACENT_CONST = [
     [1,0],
-    [1,1],
-    [0,1],
-    [-1,1],
-    [-1,0],
-    [-1,-1],
+    [1,-1],
     [0,-1],
-    [1,-1]
+    [-1,-1],
+    [-1,0],
+    [-1,1],
+    [0,1],
+    [1,1]
   ]
   def initialize(map = [])
     @map = map
@@ -25,7 +25,7 @@ class Minesweeper
   end
 
   def have_mine?(x, y)
-    get(x,y) == 'X'
+    get(y,x) == 'X'
   end
 
   def is_clear?(x, y)
@@ -34,6 +34,14 @@ class Minesweeper
 
   def clear(x, y)
     @map[x,y] = ''
+  end
+
+  def are_adjacents_clear?(x, y)
+    all_clears?(get_adjacents(x, y))
+  end
+
+  def all_clears?(cells)
+    cells.find{|cell| have_mine?(cell[0], cell[1])} == nil
   end
 
   def get_adjacents(x, y)
