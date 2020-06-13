@@ -8,8 +8,8 @@ RSpec.describe 'Minesweeper' do
       ['0','0','0','0','0','0','0','0','0','0'],
       ['0','0','0','0','0','0','0','0','0','0'],
       ['0','0','0','0','0','0','0','0','0','0'],
-      ['0','0','0','0','0','0','0','0','0','0'],
-      ['XX','0','0','0','0','0','0','0','0','X'],
+      ['0','0','0','0','X','0','0','0','0','0'],
+      ['X','0','0','0','0','0','0','0','0','X'],
       ['0','0','0','0','0','0','0','0','0','0'],
       ['0','0','0','0','0','0','0','0','0','0'],
       ['0','0','0','0','0','0','0','0','0','0'],
@@ -42,10 +42,29 @@ RSpec.describe 'Minesweeper' do
       expect(game.are_adjacents_clear?(1,1)).to be_truthy
     end
 
+    it "[6,4] adjacent are clear" do
+      expect(game.are_adjacents_clear?(6,4)).to be_truthy
+    end
+
+    it "[5,4] adjacent are not clear" do
+      expect(game.are_adjacents_clear?(5,4)).to be_falsey
+    end
+
     it "[8,8] adjacent are not clear" do
       expect(game.are_adjacents_clear?(8,8)).to be_falsey
     end
 
+    it "[1,6] adjacent are not clear" do
+      expect(game.are_adjacents_clear?(1,6)).to be_falsey
+    end
+
+    it "[2,6] adjacent are not clear" do
+      expect(game.are_adjacents_clear?(2,6)).to be_truthy
+    end
+
+    it "[0,9] adjacent are not clear" do
+      expect(game.are_adjacents_clear?(0,9)).to be_truthy
+    end
   end
   context 'valiate boundaries' do
     context 'map 10 x 10' do
@@ -117,8 +136,20 @@ RSpec.describe 'Minesweeper' do
       expect(adjacents.size).to eq(8)
       expect(adjacents).to eq( [ [2,1],[2,0],[1,0],[0,0],[0,1],[0,2],[1,2],[2,2] ] )
     end
-  end
 
+    it '[5,6] => [ [6,6],[6,5],[5,5],[4,5],[4,6],[4,7],[5,7],[6,7] ]' do
+      adjacents = game.get_adjacents(5,6)
+      expect(adjacents.size).to eq(8)
+      expect(adjacents).to eq( [ [6,6],[6,5],[5,5],[4,5],[4,6],[4,7],[5,7],[6,7] ] )
+    end
+
+    it '[3,7] => [ [4,7],[4,6],[3,6],[2,6],[2,7],[2,8],[3,8],[4,8] ]' do
+      adjacents = game.get_adjacents(3,7)
+      expect(adjacents.size).to eq(8)
+      expect(adjacents).to eq( [ [4,7],[4,6],[3,6],[2,6],[2,7],[2,8],[3,8],[4,8] ] )
+    end
+
+  end
   context 'validate border adjacents' do
     it 'top border [4,0] => [ [5,0],[3,0],[3,1],[4,1],[5,1] ]' do
       adjacents = game.get_adjacents(4,0)
