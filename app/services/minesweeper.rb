@@ -12,8 +12,8 @@ class Minesweeper
   ]
   def initialize(map = [])
     @map = map
-    @max_x = @map[0].size
-    @max_y = @map.size
+    @max_x = @map[0].size - 1
+    @max_y = @map.size - 1
   end
 
   def click(x, y)
@@ -25,7 +25,7 @@ class Minesweeper
   end
 
   def have_mine?(x, y)
-    get(x,y) == 'x'
+    get(x,y) == 'X'
   end
 
   def is_clear?(x, y)
@@ -47,7 +47,7 @@ class Minesweeper
   end
 
   def is_in_bounds?(x, y)
-    (0 <= x && x <= @max_x) && (0 <= y && y<= @max_y)
+    (0 <= x && x <= @max_x) && (0 <= y && y <= @max_y)
   end
 
 
