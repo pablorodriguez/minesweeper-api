@@ -40,6 +40,7 @@ group :development, :test do
   gem 'rspec-rails', '~> 4.0.0'
   gem 'pry-byebug'
   gem 'pry-rails'
+  gem 'tty-table'
 end
 
 group :development do
