@@ -2,8 +2,9 @@ class Minesweeper < ApplicationRecord
   belongs_to :user
   serialize :visited, Hash
   serialize :map, Array
-  validates :map, presence: true
+  validates :map, :name, presence: true
   validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true , greater_than: 0  }
+  validates :name, uniqueness: { scope: :user_id, message: "duplicate name within the same user" }
 
   ADJACENT_CONST = [
     [1,0],
@@ -17,15 +18,16 @@ class Minesweeper < ApplicationRecord
   ]
 
   after_initialize do |game|
+    self.amount_of_mines ||= 0
     game.set_default_values
   end
 
   def set_default_values
-    if map.empty? && max_x && max_y
+    if map.empty? && max_x && max_y && amount_of_mines > 0
       init_map
       visited ||= {}
-      max_x = map[0].size - 1
-      max_y = map.size - 1
+      self.max_x = map[0].size - 1
+      self.max_y = map.size - 1
     end
     status = "playing"
   end
@@ -43,19 +45,19 @@ class Minesweeper < ApplicationRecord
     new_map = []
     max_y.times.each{ |t| new_map << Array.new(max_x,'') }
     mines = {}
-
-    while number_of_mines > 0
+    amount = amount_of_mines
+    while amount > 0
       x = rand(max_x).to_i
       y = rand(max_y).to_i
       key = "#{x}##{y}"
       unless mines[key]
         new_map[y][x] = 'X'
         mines[key] = true
-        number -= 1
+        amount -= 1
       end
     end
 
-    map = new_map
+    self.map = new_map
   end
 
   def click(x, y)
