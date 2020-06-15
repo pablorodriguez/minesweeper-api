@@ -57,3 +57,10 @@ Things you may want to cover:
 
  Next:
  Start with the API
+
+8. Refactor to move the game service into a Model
+9. Add model validations and specs
+10. Add Controller and specs
+
+Next:
+Strat with the client to consume the API
