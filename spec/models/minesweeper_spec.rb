@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-RSpec.describe 'Minesweeper' do
+RSpec.describe Minesweeper, type: :model do
   let(:game) do
-    game = Minesweeper.new()
-    game.map = map
+    game = Minesweeper.new
+    game.set_map(map)
     game
   end
 

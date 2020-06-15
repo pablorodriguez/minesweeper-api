@@ -1,7 +1,9 @@
-class Minesweeper
-
-  attr_reader :status
-  attr_accessor :map
+class Minesweeper < ApplicationRecord
+  belongs_to :user
+  serialize :visited, Hash
+  serialize :map, Array
+  validates :map, presence: true
+  validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true , greater_than: 0  }
 
   ADJACENT_CONST = [
     [1,0],
@@ -14,29 +16,35 @@ class Minesweeper
     [1,1]
   ]
 
-  def initialize(max_x=10, max_y=10, number=10, print_on_click= false)
-    @map = map || init_map(max_x,max_y,number)
-    @visited = {}
-    @max_x = @map[0].size - 1
-    @max_y = @map.size - 1
-    @status = "playing"
-    @print_on_click = print_on_click
+  after_initialize do |game|
+    game.set_default_values
   end
 
-  def map=(new_map)
-    @map = new_map
-    @visited = {}
-    @max_x = @map[0].size - 1
-    @max_y = @map.size - 1
-    @status = "playing"
+  def set_default_values
+    if map.empty? && max_x && max_y
+      init_map
+      visited ||= {}
+      max_x = map[0].size - 1
+      max_y = map.size - 1
+    end
+    status = "playing"
   end
 
-  def init_map(max_x,max_y, number)
+  def set_map(new_map)
+    self.map = new_map
+    self.visited = {}
+    self.max_x = self.map[0].size - 1
+    self.max_y = self.map.size - 1
+    self.status = "playing"
+    self.amount_of_mines= self.map.flatten.select{|c| c == 'X'}.count
+  end
+
+  def init_map
     new_map = []
     max_y.times.each{ |t| new_map << Array.new(max_x,'') }
     mines = {}
 
-    while number > 0
+    while number_of_mines > 0
       x = rand(max_x).to_i
       y = rand(max_y).to_i
       key = "#{x}##{y}"
@@ -47,33 +55,24 @@ class Minesweeper
       end
     end
 
-    @map = new_map
+    map = new_map
   end
 
   def click(x, y)
-    if @print_on_click
-      puts "click on #{x}, #{y}"
-      print
-    end
-
     if have_mine?(x,y)
-      @status = "loser"
+      self.status = "loser"
     else
       clear(x,y)
-      @status = "winner" if winner?
-    end
-
-    if @print_on_click
-      print
+      self.status = "winner" if winner?
     end
   end
 
   def winner?
-    @map.flatten.find{|d| d == "0"} != nil
+    map.flatten.find{|d| d == "0"} != nil
   end
 
   def get(x, y)
-    @map[y][x]
+    map[y][x]
   end
 
   def have_mine?(x, y)
@@ -81,7 +80,7 @@ class Minesweeper
   end
 
   def set_value_at(x,y,value)
-    @map[y][x] = value
+    map[y][x] = value
   end
 
   def is_clear?(x, y)
@@ -90,9 +89,9 @@ class Minesweeper
 
   def clear(x, y)
     cell_key = "#{x}##{y}"
-    return if @visited[cell_key]
+    return if visited[cell_key]
     set_value_at(x,y,' ')
-    @visited[cell_key] = true
+    visited[cell_key] = true
     adjacents = get_adjacents(x, y)
     mines = get_mines(adjacents)
     if mines.size > 0
@@ -125,14 +124,13 @@ class Minesweeper
   end
 
   def is_in_bounds?(x, y)
-    (0 <= x && x <= @max_x) && (0 <= y && y <= @max_y)
+    (0 <= x && x <= max_x) && (0 <= y && y <= max_y)
   end
 
   def print
-    table = TTY::Table.new(@map)
+    table = TTY::Table.new(map)
     puts table.render(:unicode)
-    puts @status
+    puts status
   end
-
 
 end
