@@ -8,7 +8,10 @@ class MinesweepersController < ApplicationController
 
   def index
     games = Minesweeper.all
-    render json: { games: games.as_json}, status: :ok
+    respond_to do |format|
+      format.html
+      format.json { render json: { games: games.as_json}, status: :ok }
+    end
   end
 
   def create
