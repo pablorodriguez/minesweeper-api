@@ -64,3 +64,6 @@ Things you may want to cover:
 
 Next:
 Strat with the client to consume the API
+
+Deployed on Heroku
+url: https://minesweeper-api-mdz.herokuapp.com/minesweepers
