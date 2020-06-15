@@ -1,7 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe 'Minesweeper' do
-  let(:game) { Minesweeper.new(map) }
+  let(:game) do
+    game = Minesweeper.new()
+    game.map = map
+    game
+  end
 
 
   context 'validate actions' do
@@ -17,7 +21,7 @@ RSpec.describe 'Minesweeper' do
     it "clear 1,1 after click" do
       expect(game.is_clear?(1,1)).to be_falsey
       game.click(1,1)
-      expect(game.is_clear?(1,1)).to be_truthy
+      expect(game.get(1,1)).to eq('2')
     end
 
     it "click 1,1 then adjacent are not clear" do

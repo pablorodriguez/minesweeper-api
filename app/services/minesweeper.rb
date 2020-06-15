@@ -1,6 +1,7 @@
 class Minesweeper
 
   attr_reader :status
+  attr_accessor :map
 
   ADJACENT_CONST = [
     [1,0],
@@ -13,13 +14,40 @@ class Minesweeper
     [1,1]
   ]
 
-  def initialize(map = [], print_on_click= false)
+  def initialize(max_x=10, max_y=10, number=10, print_on_click= false)
+    @map = map || init_map(max_x,max_y,number)
     @visited = {}
-    @map = map
     @max_x = @map[0].size - 1
     @max_y = @map.size - 1
     @status = "playing"
     @print_on_click = print_on_click
+  end
+
+  def map=(new_map)
+    @map = new_map
+    @visited = {}
+    @max_x = @map[0].size - 1
+    @max_y = @map.size - 1
+    @status = "playing"
+  end
+
+  def init_map(max_x,max_y, number)
+    new_map = []
+    max_y.times.each{ |t| new_map << Array.new(max_x,'') }
+    mines = {}
+
+    while number > 0
+      x = rand(max_x).to_i
+      y = rand(max_y).to_i
+      key = "#{x}##{y}"
+      unless mines[key]
+        new_map[y][x] = 'X'
+        mines[key] = true
+        number -= 1
+      end
+    end
+
+    @map = new_map
   end
 
   def click(x, y)
@@ -32,15 +60,16 @@ class Minesweeper
       @status = "loser"
     else
       clear(x,y)
+      @status = "winner" if winner?
     end
-    @status = "winner" if winner?
+
     if @print_on_click
       print
     end
   end
 
   def winner?
-    @map.flatten.uniq.include?("0") == false
+    @map.flatten.find{|d| d == "0"} != nil
   end
 
   def get(x, y)
@@ -65,7 +94,11 @@ class Minesweeper
     set_value_at(x,y,' ')
     @visited[cell_key] = true
     adjacents = get_adjacents(x, y)
-    return unless all_emptys?(adjacents)
+    mines = get_mines(adjacents)
+    if mines.size > 0
+      set_value_at(x, y, mines.size.to_s)
+      return
+    end
     adjacents.each{|cell| clear(cell[0], cell[1])}
   end
 
@@ -75,6 +108,10 @@ class Minesweeper
 
   def all_emptys?(cells)
     cells.find{|cell| have_mine?(cell[0], cell[1])} == nil
+  end
+
+  def get_mines(cells)
+    cells.select{|cell| have_mine?(cell[0], cell[1])}
   end
 
   def get_adjacents(x, y)
