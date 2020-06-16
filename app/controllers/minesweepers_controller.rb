@@ -10,14 +10,14 @@ class MinesweepersController < ApplicationController
     games = Minesweeper.all
     respond_to do |format|
       format.html
-      format.json { render json: { games: games.as_json}, status: :ok }
+      format.json { render json: { games: games.as_json(include: :user)}, status: :ok }
     end
   end
 
   def create
     game = Minesweeper.new(game_params.merge(user_id: @user.id))
     if game.save
-      render json: { game: game.as_json}, status: :ok
+      render json: { game: game.as_json(include: :user)}, status: :ok
     else
       render json: { errors: game.errors.full_messages, game: game.as_json}, status: :unprocessable_entity
     end
@@ -25,7 +25,7 @@ class MinesweepersController < ApplicationController
 
   def update
     if game.update(game_params)
-      render json: { game: game.as_json}, status: :ok
+      render json: { game: game.as_json(include: :user)}, status: :ok
     else
       render json: { errors: game.error.full_messages, game: game.as_json}, status: :unprocessable_entity
     end
@@ -33,14 +33,13 @@ class MinesweepersController < ApplicationController
 
   def click
     @game.click(params[:x].to_i, params[:y].to_i)
-    render json: { game: @game.as_json}, status: :ok
+    render json: { game: @game.as_json(include: :user)}, status: :ok
   end
 
   private
 
   def set_user
-    @user = User.where("name = ?", params[:user_name]).take
-    raise ActiveRecord::RecordNotFound unless @user
+    @user = User.find_or_create_by(name: params[:user_name])
   end
 
   def set_game

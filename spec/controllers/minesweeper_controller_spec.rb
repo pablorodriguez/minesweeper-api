@@ -3,7 +3,6 @@ require 'rails_helper'
 RSpec.describe MinesweepersController, type: :controller do
 
   let(:user) { User.create(name: "pablomdz") }
-
   let(:parsed_response) { JSON.parse(response.body) }
 
   it "GET#index returns a OK" do
@@ -14,7 +13,6 @@ RSpec.describe MinesweepersController, type: :controller do
   describe 'POST#create' do
     let(:params) {{
       name: "Game A",
-      user_name: user.name,
       max_x: 15,
       max_y: 15,
       amount_of_mines: 15
@@ -26,9 +24,13 @@ RSpec.describe MinesweepersController, type: :controller do
     end
 
     it 'return UNPROCESSABLE_ENTITY for amount of mines 0' do
-      params["amount_of_mines"] = 0
+      params.merge!(user_name: user.name,amount_of_mines: 0)
       post :create, params: params
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'create a new user' do
+      expect{ post :create, params: params.merge!(user_name: 'hugomdz') }.to change{ User.count}.by(1)
     end
 
   end
