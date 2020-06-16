@@ -5,6 +5,7 @@ class Minesweeper < ApplicationRecord
   validates :map, :name, presence: true
   validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true , greater_than: 0  }
   validates :name, uniqueness: { scope: :user_id, message: "duplicate name within the same user" }
+  before_save :set_time_spend, if: :will_save_change_to_status?
 
   ADJACENT_CONST = [
     [1,0],
@@ -18,18 +19,30 @@ class Minesweeper < ApplicationRecord
   ]
 
   after_initialize do |game|
-    self.amount_of_mines ||= 0
+    game.amount_of_mines ||= 0
+    game.status ||= "playing"
     game.set_default_values
+  end
+
+  def set_time_spend
+    if status_in_database && status_in_database == 'playing'
+      self.time_spend = playing_time
+    end
   end
 
   def set_default_values
     if map.empty? && max_x && max_y && amount_of_mines > 0
       init_map
-      visited ||= {}
-      self.max_x = map[0].size - 1
-      self.max_y = map.size - 1
     end
-    status = "playing"
+
+  end
+
+  def time
+    status == "playing" ? playing_time : time_spend
+  end
+
+  def playing_time
+    ((Time.now - self.created_at) / (60 * 60)).round(2)
   end
 
   def set_map(new_map)
@@ -41,9 +54,14 @@ class Minesweeper < ApplicationRecord
     self.amount_of_mines= self.map.flatten.select{|c| c == 'X'}.count
   end
 
+  def restart
+    init_map
+    self.save
+  end
+
   def init_map
     new_map = []
-    max_y.times.each{ |t| new_map << Array.new(max_x,'') }
+    max_y.times.each{ |t| new_map << Array.new(max_x,'#') }
     mines = {}
     amount = amount_of_mines
     while amount > 0
@@ -58,6 +76,9 @@ class Minesweeper < ApplicationRecord
     end
 
     self.map = new_map
+    self.visited = {}
+    self.max_x = map[0].size - 1
+    self.max_y = map.size - 1
   end
 
   def click(x, y)
@@ -65,12 +86,24 @@ class Minesweeper < ApplicationRecord
       self.status = "loser"
     else
       clear(x,y)
-      self.status = "winner" if winner?
+      if winner?
+        self.status = "winner"
+      end
     end
+    self.save
+  end
+
+  def flag(x, y)
+    if have_mine?(x,y)
+      set_value_at(x,y,'F/X')
+    else
+      set_value_at(x,y,'F/#')
+    end
+    self.save
   end
 
   def winner?
-    map.flatten.find{|d| d == "0"} != nil
+    map.flatten.find{|d| d == "#"} == nil
   end
 
   def get(x, y)
@@ -78,7 +111,7 @@ class Minesweeper < ApplicationRecord
   end
 
   def have_mine?(x, y)
-    get(x,y) == 'X'
+    get(x,y).include?('X')
   end
 
   def set_value_at(x,y,value)
@@ -133,6 +166,14 @@ class Minesweeper < ApplicationRecord
     table = TTY::Table.new(map)
     puts table.render(:unicode)
     puts status
+  end
+
+  def view_map
+    n_map = []
+    map.each do |row|
+      n_map << row.map{ |e| e[0] == 'F' ? 'F' : e }
+    end
+    n_map
   end
 
 end

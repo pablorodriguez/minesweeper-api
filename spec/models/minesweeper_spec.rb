@@ -2,8 +2,9 @@ require 'rails_helper'
 
 RSpec.describe Minesweeper, type: :model do
   let(:game) do
-    game = Minesweeper.new
+    game = Minesweeper.new(name: 'TestGame', user_id: user.id)
     game.set_map(map)
+    game.save
     game
   end
 
@@ -45,16 +46,56 @@ RSpec.describe Minesweeper, type: :model do
 
   end
 
+  context 'check time' do
+    let(:map) {
+      [
+        ['#','#','X','#','#'],
+        ['#','#','#','#','#'],
+        ['#','#','X','#','#'],
+        ['X','#','#','#','#'],
+        ['#','#','#','#','#']
+      ]
+    }
+
+    it "should have time spend when lose" do
+      game.click(0,0)
+      expect(game.time_spend).to be_nil
+      game.click(2,0)
+      expect(game.status).to eq("loser")
+      expect(game.time_spend).not_to be_nil
+    end
+
+    it "should have time spend when win" do
+      game.click(0,0)
+      expect(game.time_spend).to be_nil
+      game.click(4,4)
+      game.click(2,1)
+      game.click(0,4)
+      expect(game.status).to eq("winner")
+      expect(game.time_spend).not_to be_nil
+    end
+
+  end
+
   context 'validate actions' do
     let(:map) {
       [
-        ['0','0','X','0','0'],
-        ['0','0','0','0','0'],
-        ['0','0','X','0','0'],
-        ['X','0','0','0','0'],
-        ['0','0','0','0','0']
+        ['#','#','X','#','#'],
+        ['#','#','#','#','#'],
+        ['#','#','X','#','#'],
+        ['X','#','#','#','#'],
+        ['#','#','#','#','#']
       ]
     }
+
+    it "clear visited when reset" do
+      game.click(1,1)
+      game.flag(2,3)
+      expect(game.visited.size).to be(1)
+      game.restart
+      expect(game.visited.size).to be(0)
+    end
+
     it "clear 1,1 after click" do
       expect(game.is_clear?(1,1)).to be_falsey
       game.click(1,1)
@@ -97,16 +138,16 @@ RSpec.describe Minesweeper, type: :model do
   context "validate" do
     let(:map) {
       [
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0',' ','0','0','0','0','0','0','0'],
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0','0','0','X','0','0','0','0','0'],
-        ['X','0','0','0','0','0','0','0','0','X'],
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0','0','0','0','0','0','0','0','0'],
-        ['0','0','0','X','0','X','0','0','0','X']
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#',' ','#','#','#','#','#','#','#'],
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#','#','#','X','#','#','#','#','#'],
+        ['X','#','#','#','#','#','#','#','#','X'],
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#','#','#','#','#','#','#','#','#'],
+        ['#','#','#','X','#','X','#','#','#','X']
       ]
     }
     context 'content' do

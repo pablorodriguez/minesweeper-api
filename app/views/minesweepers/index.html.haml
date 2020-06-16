@@ -1,2 +1,22 @@
 %h1
   Minesweeper API Game
+.games
+- @games.each do |game|
+  %hr
+  %label
+    Game Name:
+    = game.name
+  %label
+    , User Name:
+    = game.user.name
+  .game
+    - game.map.each_with_index do |row, i|
+      = i
+      = row
+      %br
+  %label
+    Status:
+    = game.status
+    , Time :
+    = game.time
+    hs:mm
