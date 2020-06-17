@@ -58,6 +58,7 @@ class MinesweepersController < ApplicationController
     @user = User.find_or_create_by(name: params[:user_name])
   end
 
+  # Search the game by its name, we use the game name as its id to search
   def set_game
     @game = Minesweeper.find_by_name!(params[:id])
   end

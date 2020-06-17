@@ -43,7 +43,6 @@ RSpec.describe MinesweepersController, type: :controller do
     it "create a duplicate game name" do
       params[:name] = game.name
       post :create, params: params
-      binding.pry
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
@@ -66,6 +65,38 @@ RSpec.describe MinesweepersController, type: :controller do
       expect(n_game.get(2,2)).to include('F')
     end
 
+    it 'flag over mine' do
+      id = game.id
+      x,y = get_mine_coords
+      patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
+      expect(parsed_response['game']).not_to be_nil
+      expect(response).to have_http_status(200)
+      n_game = Minesweeper.find(id)
+      expect(n_game.get(x,y)).to eq('F/X')
+    end
+
+    it 'un flag over mine' do
+      id = game.id
+      x,y = get_mine_coords
+      patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
+      expect(parsed_response['game']).not_to be_nil
+      expect(response).to have_http_status(200)
+
+      patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
+      n_game = Minesweeper.find(id)
+      expect(n_game.get(x,y)).to eq('X')
+    end
+
+    it 'un flag over cell 2,2' do
+      id = game.id
+      patch :update, params: {id: game.name, x:2, y:2, perform: 'flag' }
+      expect(parsed_response['game']).not_to be_nil
+      expect(response).to have_http_status(200)
+      patch :update, params: {id: game.name, x:2, y:2, perform: 'flag' }
+      n_game = Minesweeper.find(id)
+      expect(n_game.get(2,2)).not_to include('F')
+    end
+
     it 'update data' do
       patch :update, params: {id: game.name, name: "Game 2" }
       expect(parsed_response['game']).not_to be_nil
@@ -76,13 +107,7 @@ RSpec.describe MinesweepersController, type: :controller do
 
 
     it 'click over a mine, game over' do
-      y = nil
-      x = nil
-      game.map.each_with_index do |values, index|
-        y = index
-        x = values.index("X")
-        break if x
-      end
+      x,y = get_mine_coords
       patch :update, params: {id: game.name, x:x, y:y, perform: 'click' }
       n_game = parsed_response['game']
 
@@ -90,6 +115,17 @@ RSpec.describe MinesweepersController, type: :controller do
       expect(n_game).not_to be_nil
       expect(n_game['status']).to eq('loser')
 
+    end
+
+    def get_mine_coords
+      y = nil
+      x = nil
+      game.map.each_with_index do |values, index|
+        y = index
+        x = values.index("X")
+        break if x
+      end
+      return x, y
     end
   end
 end

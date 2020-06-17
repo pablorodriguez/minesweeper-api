@@ -52,6 +52,7 @@ class Minesweeper < ApplicationRecord
     self.save
   end
 
+  # Initialize the map mines on random coords
   def init_map
     new_map = []
     max_y.times.each{ |t| new_map << Array.new(max_x,'#') }
@@ -99,7 +100,11 @@ class Minesweeper < ApplicationRecord
 
   def flag(x, y)
     return unless valid_coords_and_status?(x,y)
-    if have_mine?(x,y)
+    if have_flag?(x,y)
+      current_value = get(x,y)
+      new_value = current_value.split("/")[1]
+      set_value_at(x,y,new_value)
+    elsif have_mine?(x,y)
       set_value_at(x,y,'F/X')
     else
       set_value_at(x,y,'F/#')
@@ -107,6 +112,7 @@ class Minesweeper < ApplicationRecord
     self.save
   end
 
+  # Check there is not # on the map, that means you win
   def winner?
     map.flatten.find{|d| d == "#"} == nil
   end
@@ -119,6 +125,10 @@ class Minesweeper < ApplicationRecord
     get(x,y).include?('X')
   end
 
+  def have_flag?(x,y)
+    get(x,y)[0] == 'F'
+  end
+
   def set_value_at(x,y,value)
     map[y][x] = value
   end
@@ -127,6 +137,13 @@ class Minesweeper < ApplicationRecord
     get(x, y) == ' '
   end
 
+  #
+  # Retrun if the cell x,y was visited
+  # Clear the value for thecell
+  # Get Adjacents for the cell x,y
+  # If all adjacent are clear call Clear on each one
+  # If there are some mines set the amount of mine
+  #
   def clear(x, y)
     cell_key = "#{x}##{y}"
     return if visited[cell_key]
@@ -136,9 +153,9 @@ class Minesweeper < ApplicationRecord
     mines = get_mines(adjacents)
     if mines.size > 0
       set_value_at(x, y, mines.size.to_s)
-      return
+    else
+      adjacents.each{|cell| clear(cell[0], cell[1])}
     end
-    adjacents.each{|cell| clear(cell[0], cell[1])}
   end
 
   def are_adjacents_emptys?(x, y)
@@ -163,22 +180,35 @@ class Minesweeper < ApplicationRecord
     adjacent
   end
 
+  # check if the coords are inside of the map ( in bounds )
   def is_in_bounds?(x, y)
     (0 <= x && x <= max_x) && (0 <= y && y <= max_y)
   end
 
+  #
+  # Print the map on the console
+  #
   def print
     table = TTY::Table.new(map)
     puts table.render(:unicode)
     puts status
   end
 
+  #
+  # Use view map to show map info to the user, this hide where mines are
+  #
   def view_map
     n_map = []
     map.each do |row|
       n_map << row.map do |e|
-        e[0] == 'F' ? 'F' : e
-        e[0] == 'X' ? '#' : e
+        case e[0]
+        when 'F'
+          'F'
+        when 'X'
+          '#'
+        else
+          e
+        end
       end
     end
     n_map
