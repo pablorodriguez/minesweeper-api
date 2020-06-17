@@ -13,7 +13,7 @@ class MinesweepersController < ApplicationController
   end
 
   def index
-    games =  if params[:user_name]
+    @games =  if params[:user_name]
       Minesweeper.joins(:user).where("users.name like ?", params[:user_name])
     else
       Minesweeper.all
@@ -21,7 +21,7 @@ class MinesweepersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render json: { games: as_json(games)}, status: :ok }
+      format.json { render json: { games: as_json(@games)}, status: :ok }
     end
   end
 
