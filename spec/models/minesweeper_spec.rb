@@ -44,6 +44,39 @@ RSpec.describe Minesweeper, type: :model do
       it { is_expected.not_to be_valid }
     end
 
+    context "play time" do
+      let(:game) { Minesweeper.create({max_x:10, max_y:10, amount_of_mines:10, user_id: user.id, name: "Test Game"}) }
+
+      it "great then 2 minutes while play" do
+        x,y = GameSpecsHelpers.get_coords(game,'#')
+        game.click(x,y)
+        # move 2 minutes while playing
+        Timecop.freeze(Time.now + 2.minutes) do
+          game.click(1,1)
+          # time playing must be 2
+
+          expect(game.time).to be >= 2.0
+          # stop the game and move 2 minutes (4 minutes from the begining)
+          game.stop
+          Timecop.freeze(Time.now + 2.minutes) do
+            # time playing should not change
+            expect(game.time).to be_between(2.0, 3.0).inclusive
+            # start playing again
+            game.play
+
+            # move 2 mintues more forward (6 munites from the begining)
+            Timecop.freeze(Time.now + 2.minutes) do
+              game.click(x,y)
+              # palying time should changed
+              expect(game.time).to be >= 4
+            end
+          end
+        end
+
+
+      end
+    end
+
   end
 
   context 'check time' do
@@ -59,7 +92,7 @@ RSpec.describe Minesweeper, type: :model do
 
     it "should have time spend when lose" do
       game.click(0,0)
-      expect(game.time_spend).to be_nil
+      expect(game.time_spend).to eq(0.0)
       game.click(2,0)
       expect(game.status).to eq("loser")
       expect(game.time_spend).not_to be_nil
@@ -67,7 +100,7 @@ RSpec.describe Minesweeper, type: :model do
 
     it "should have time spend when win" do
       game.click(0,0)
-      expect(game.time_spend).to be_nil
+      expect(game.time_spend).to eq(0.0)
       game.click(4,4)
       game.click(2,1)
       game.click(0,4)

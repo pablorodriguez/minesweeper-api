@@ -67,7 +67,7 @@ RSpec.describe MinesweepersController, type: :controller do
 
     it 'flag over mine' do
       id = game.id
-      x,y = get_mine_coords
+      x,y = GameSpecsHelpers.get_coords(game, 'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
@@ -77,7 +77,7 @@ RSpec.describe MinesweepersController, type: :controller do
 
     it 'un flag over mine' do
       id = game.id
-      x,y = get_mine_coords
+      x,y = GameSpecsHelpers.get_coords(game,'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
@@ -107,7 +107,7 @@ RSpec.describe MinesweepersController, type: :controller do
 
 
     it 'click over a mine, game over' do
-      x,y = get_mine_coords
+      x,y = GameSpecsHelpers.get_coords(game,'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'click' }
       n_game = parsed_response['game']
 
@@ -117,15 +117,5 @@ RSpec.describe MinesweepersController, type: :controller do
 
     end
 
-    def get_mine_coords
-      y = nil
-      x = nil
-      game.map.each_with_index do |values, index|
-        y = index
-        x = values.index("X")
-        break if x
-      end
-      return x, y
-    end
   end
 end

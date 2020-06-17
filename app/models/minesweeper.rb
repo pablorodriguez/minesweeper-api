@@ -20,13 +20,16 @@ class Minesweeper < ApplicationRecord
 
   after_initialize do |game|
     game.amount_of_mines ||= 0
+    game.time_spend ||= 0
     game.status ||= "playing"
+    game.start_play_at ||= Time.now
     game.init_map if (game.map.empty? && game.max_x && game.max_y && game.amount_of_mines > 0)
   end
 
   def set_time_spend
     if status_in_database && status_in_database == 'playing'
-      self.time_spend = playing_time
+      self.time_spend += playing_time
+      self.start_play_at = Time.now
     end
   end
 
@@ -35,7 +38,7 @@ class Minesweeper < ApplicationRecord
   end
 
   def playing_time
-    ((Time.now - self.created_at) / (60 * 60)).round(2) if self.created_at
+    self.start_play_at ? (((Time.now - self.start_play_at) / 60) + time_spend).round(2) : 0
   end
 
   def set_map(new_map)
@@ -45,11 +48,6 @@ class Minesweeper < ApplicationRecord
     self.max_y = self.map.size - 1
     self.status = "playing"
     self.amount_of_mines= self.map.flatten.select{|c| c == 'X'}.count
-  end
-
-  def restart
-    init_map
-    self.save
   end
 
   # Initialize the map mines on random coords
@@ -83,6 +81,22 @@ class Minesweeper < ApplicationRecord
     self.errors.add(:status, "the games is over, you won") if status == "winner"
 
     self.errors.empty?
+  end
+
+  def restart
+    init_map
+    self.time_spend = 0
+    self.save
+  end
+
+  def stop
+    self.status = "stop"
+    self.save
+  end
+
+  def play
+    self.status = "playing"
+    self.save
   end
 
   def click(x, y)
