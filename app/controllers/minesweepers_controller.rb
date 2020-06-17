@@ -14,7 +14,7 @@ class MinesweepersController < ApplicationController
 
   def index
     @games =  if params[:user_name]
-      Minesweeper.joins(:user).where("users.name like ?", params[:user_name]).order("minesweeper.id desc")
+      Minesweeper.joins(:user).where("users.name like ?", params[:user_name]).order("minesweepers.id desc")
     else
       Minesweeper.all.order("id desc")
     end
