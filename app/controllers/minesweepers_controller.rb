@@ -9,7 +9,7 @@ class MinesweepersController < ApplicationController
   end
 
   def show
-    render json: { game: as_json(game)}, status: :ok
+    render json: { game: as_json(@game)}, status: :ok
   end
 
   def index
@@ -59,7 +59,7 @@ class MinesweepersController < ApplicationController
   end
 
   def set_game
-    @game = Minesweeper.find_by_name(params[:id])
+    @game = Minesweeper.find_by_name!(params[:id])
   end
 
   def game_params
