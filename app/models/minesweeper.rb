@@ -171,7 +171,10 @@ class Minesweeper < ApplicationRecord
   def view_map
     n_map = []
     map.each do |row|
-      n_map << row.map{ |e| e[0] == 'F' ? 'F' : e }
+      n_map << row.map do |e|
+        e[0] == 'F' ? 'F' : e
+        e[0] == 'X' ? '#' : e
+      end
     end
     n_map
   end

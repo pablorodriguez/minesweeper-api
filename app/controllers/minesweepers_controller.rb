@@ -35,7 +35,7 @@ class MinesweepersController < ApplicationController
   end
 
   def as_json(obj)
-    obj.as_json(only: [:view_map, :time, :name, :status], include: :user)
+    obj.as_json(only: [:name, :status, :created_at, :updated_at], methods: [:view_map, :time], include: :user)
   end
 
   def update
