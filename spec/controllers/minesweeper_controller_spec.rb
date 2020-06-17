@@ -40,6 +40,13 @@ RSpec.describe MinesweepersController, type: :controller do
       expect{ post :create, params: params  }.to change{ User.count}.by(1)
     end
 
+    it "create a duplicate game name" do
+      params[:name] = game.name
+      post :create, params: params
+      binding.pry
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
   end
 
   describe 'PATCH#actions' do

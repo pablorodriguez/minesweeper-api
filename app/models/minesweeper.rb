@@ -78,8 +78,9 @@ class Minesweeper < ApplicationRecord
     unless is_in_bounds?(x,y)
       self.errors.add(:base, "coordinates out of bounds")
     end
-    self.errors.add(:status, "the games is over, you lose") if status == "lose"
-    self.errors.add(:status, "the games is over, you won") if status == "win"
+    self.errors.add(:status, "the games is over, you lose") if status == "loser"
+    self.errors.add(:status, "the games is over, you won") if status == "winner"
+
     self.errors.empty?
   end
 
