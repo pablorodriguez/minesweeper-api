@@ -42,7 +42,7 @@ class Minesweeper < ApplicationRecord
   end
 
   def playing_time
-    ((Time.now - self.created_at) / (60 * 60)).round(2)
+    ((Time.now - self.created_at) / (60 * 60)).round(2) if self.created_at
   end
 
   def set_map(new_map)
@@ -81,7 +81,17 @@ class Minesweeper < ApplicationRecord
     self.max_y = map.size - 1
   end
 
+  def valid_coords_and_status?(x,y)
+    unless is_in_bounds?(x,y)
+      self.errors.add(:base, "coordinates out of bounds")
+    end
+    self.errors.add(:status, "the games is over, you lose") if status == "lose"
+    self.errors.add(:status, "the games is over, you won") if status == "win"
+    self.errors.empty?
+  end
+
   def click(x, y)
+    return unless valid_coords_and_status?(x,y)
     if have_mine?(x,y)
       self.status = "loser"
     else
@@ -94,6 +104,7 @@ class Minesweeper < ApplicationRecord
   end
 
   def flag(x, y)
+    return unless valid_coords_and_status?(x,y)
     if have_mine?(x,y)
       set_value_at(x,y,'F/X')
     else

@@ -36,7 +36,8 @@ RSpec.describe MinesweepersController, type: :controller do
     end
 
     it 'create a new user' do
-      expect{ post :create, params: params.merge!(user_name: 'hugomdz') }.to change{ User.count}.by(1)
+      params[:user_name] = 'hugomdz'
+      expect{ post :create, params: params  }.to change{ User.count}.by(1)
     end
 
   end

@@ -2,7 +2,7 @@ class MinesweepersController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   before_action :set_user, only: [:create]
-  before_action :set_game, only: [:update, :click, :show]
+  before_action :set_game, only: [:update, :show]
 
   rescue_from ActiveRecord::RecordNotFound do |exception|
     render json: {error: "Record not found" }, status: 404
@@ -48,7 +48,7 @@ class MinesweepersController < ApplicationController
     if result
       render json: { game: as_json(@game)}, status: :ok
     else
-      render json: { errors: @game.error.full_messages, game: as_json(@game)}, status: :unprocessable_entity
+      render json: { errors: @game.errors.full_messages, game: as_json(@game)}, status: :unprocessable_entity
     end
   end
 
