@@ -21,20 +21,13 @@ class Minesweeper < ApplicationRecord
   after_initialize do |game|
     game.amount_of_mines ||= 0
     game.status ||= "playing"
-    game.set_default_values
+    game.init_map if (game.map.empty? && game.max_x && game.max_y && game.amount_of_mines > 0)
   end
 
   def set_time_spend
     if status_in_database && status_in_database == 'playing'
       self.time_spend = playing_time
     end
-  end
-
-  def set_default_values
-    if map.empty? && max_x && max_y && amount_of_mines > 0
-      init_map
-    end
-
   end
 
   def time
