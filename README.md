@@ -1,50 +1,25 @@
-#  README
-
-
-
-This README would normally document whatever steps are necessary to get the
-
-application up and running.
-
-
-
+#  Minesweepers Games API
+This README would normally document whatever steps are necessary to get the application up and running.
 Things you may want to cover:
-
-
-
 *  Ruby version
-
 2.4.1
-
-
-
 *  System dependencies
+Rails 5.2.4
 
-
-
-*  Configuration
-
-
-
+*  Configuration to run it local
+  Clone the Git Repository
+  `git clone git@github.com:pablorodriguez/minesweeper-api.git`
 *  Database creation
-
-
-
-*  Database initialization
-
-
+  `bundle exec rake db:create`
+  `bundle exec rake db:migrate`
 
 *  How to run the test suite
-
-
-
-*  Services (job queues, cache servers, search engines, etc.)
-
-
+  `bundle exec rspec`
 
 *  Deployment instructions
-
-
+Add Heroku Repository
+`git add heroku https://git.heroku.com/minesweeper-api-mdz.git`
+`git push heroku`
 
 **Development notes**
  1. First I focus on the logic of the game
@@ -58,9 +33,11 @@ Things you may want to cover:
  Next:
  Start with the API
 
-8. Refactor to move the game service into a Model
-9. Add model validations and specs
-10. Add Controller and specs
+  8. Refactor to move the game service into a Model
+  9. Add model validations and specs
+  10. Add Controller and specs
+  11. Do multiple refactos and add more test
+  12. More validation to the model
 
 Next:
 Strat with the client to consume the API
