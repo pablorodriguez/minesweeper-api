@@ -4,7 +4,7 @@ class Minesweeper < ApplicationRecord
   serialize :map, Array
   validates :map, :name, presence: true
   validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true , greater_than: 0  }
-  validates :name, uniqueness: { scope: :user_id, message: "duplicate name within the same user" }
+  validates :name, uniqueness: { scope: :user_id, message: "duplicate within the same user" }
   before_save :set_time_spend, if: :will_save_change_to_status?
 
   ADJACENT_CONST = [

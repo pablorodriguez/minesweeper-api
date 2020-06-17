@@ -31,7 +31,7 @@ RSpec.describe Minesweeper, type: :model do
       end
 
       subject { Minesweeper.new({max_x:10, max_y:10, amount_of_mines:10, user_id: user.id, name: "Game A"}) }
-      it { should validate_uniqueness_of(:name).scoped_to(:user_id).with_message('duplicate name within the same user') }
+      it { should validate_uniqueness_of(:name).scoped_to(:user_id).with_message('duplicate within the same user') }
     end
 
     context "without max_x" do

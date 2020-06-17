@@ -66,4 +66,5 @@ Next:
 Strat with the client to consume the API
 
 Deployed on Heroku
-url: https://minesweeper-api-mdz.herokuapp.com/minesweepers
+url: https://minesweeper-api-mdz.herokuapp.com
+There you can get the list of game created with some basic information

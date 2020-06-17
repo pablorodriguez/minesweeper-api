@@ -9,24 +9,33 @@ class MinesweepersController < ApplicationController
   end
 
   def show
-    render json: { game: @game.as_json(include: :user)}, status: :ok
+    render json: { game: as_json(game)}, status: :ok
   end
 
   def index
-    @games = Minesweeper.all
+    games =  if params[:user_name]
+      Minesweeper.joins(:user).where("users.name like ?", params[:user_name])
+    else
+      Minesweeper.all
+    end
+
     respond_to do |format|
       format.html
-      format.json { render json: { games: @games.as_json(methods: [:view_map, :time], exclude: :map, include: :user)}, status: :ok }
+      format.json { render json: { games: as_json(games)}, status: :ok }
     end
   end
 
   def create
     game = Minesweeper.new(game_params.merge(user_id: @user.id))
     if game.save
-      render json: { game: game.as_json(methods: [:view_map, :time], exclude: :map, include: :user)}, status: :ok
+      render json: { game: as_json(game) }, status: :ok
     else
-      render json: { errors: game.errors.full_messages, game: game.as_json}, status: :unprocessable_entity
+      render json: { errors: game.errors.full_messages, game: as_json(game) }, status: :unprocessable_entity
     end
+  end
+
+  def as_json(obj)
+    obj.as_json(only: [:view_map, :time, :name, :status], include: :user)
   end
 
   def update
@@ -37,9 +46,9 @@ class MinesweepersController < ApplicationController
     end
 
     if result
-      render json: { game: @game.as_json(methods: [:view_map, :time], exclude: :map, include: :user)}, status: :ok
+      render json: { game: as_json(@game)}, status: :ok
     else
-      render json: { errors: @game.error.full_messages, game: @game.as_json}, status: :unprocessable_entity
+      render json: { errors: @game.error.full_messages, game: as_json(@game)}, status: :unprocessable_entity
     end
   end
 
