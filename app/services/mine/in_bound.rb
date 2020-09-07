@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # check if the coords are inside of the map ( in bounds )
 
 module Mine
@@ -9,14 +11,12 @@ module Mine
       @max_y = max_y
     end
 
-    def execute(x, y)
-      (0 <= x && x <= max_x) && (0 <= y && y <= max_y)
+    def execute(coord_x, coord_y)
+      (coord_x >= 0 && coord_x <= max_x) && (coord_y >= 0 && coord_y <= max_y)
     end
 
-    def true?(x, y)
-      execute(x, y)
+    def true?(coord_x, coord_y)
+      execute(coord_x, coord_y)
     end
-
   end
-
 end

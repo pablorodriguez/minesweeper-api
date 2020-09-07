@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mine
   class Game
     attr_accessor :model
@@ -13,13 +15,13 @@ module Mine
     end
 
     def execute(params)
-      result = if (['click', 'flag','stop','play'].include?(params[:perform]))
-        if params[:x].present? && params[:y].present?
-          self.send(params[:perform],params[:x].to_i, params[:y].to_i)
-        else
-          self.send(params[:perform])
-        end
-      end
+      result = if %w[click flag stop play].include?(params[:perform])
+                 if params[:x].present? && params[:y].present?
+                   send(params[:perform], params[:x].to_i, params[:y].to_i)
+                 else
+                   send(params[:perform])
+                 end
+               end
       result
     end
 
@@ -28,8 +30,8 @@ module Mine
       model.visited = {}
       model.max_x = model.map[0].size - 1
       model.max_y = model.map.size - 1
-      model.status = "playing"
-      model.amount_of_mines= model.map.flatten.select{|c| c == 'X'}.count
+      model.status = 'playing'
+      model.amount_of_mines = model.map.flatten.select { |c| c == 'X' }.count
       model.save
       set_dependencies
     end
@@ -44,8 +46,8 @@ module Mine
       model.time_spend
     end
 
-    def is_in_bounds?(x, y)
-      @in_bound.true?(x, y)
+    def in_bounds?(coord_x, coord_y)
+      @in_bound.true?(coord_x, coord_y)
     end
 
     def status
@@ -57,24 +59,23 @@ module Mine
     end
 
     def stop
-      model.status = "stop"
+      model.status = 'stop'
       model.save
     end
 
     def play
-      model.status = "playing"
+      model.status = 'playing'
       model.save
     end
 
-    def click(x, y)
-      return unless valid_coords_and_status?(x,y)
-      if have_mine?(x,y)
-        model.status = "loser"
+    def click(coord_x, coord_y)
+      return unless valid_coords_and_status?(coord_x, coord_y)
+
+      if mine?(coord_x, coord_y)
+        model.status = 'loser'
       else
-        clear(x,y)
-        if winner?
-          model.status = "winner"
-        end
+        clear(coord_x, coord_y)
+        model.status = 'winner' if winner?
       end
       model.save
     end
@@ -86,45 +87,44 @@ module Mine
     # If all adjacent are clear call Clear on each one
     # If there are some mines set the amount of mine
     #
-    def clear(x, y)
-      cell_key = "#{x}##{y}"
+    def clear(coord_x, coord_y)
+      cell_key = "#{coord_x}##{coord_y}"
       return if model.visited[cell_key]
-      set_value_at(x,y,' ')
+
+      set_value_at(coord_x, coord_y, ' ')
       model.visited[cell_key] = true
-      adjacents = get_adjacents(x, y)
+      adjacents = get_adjacents(coord_x, coord_y)
       mines = get_mines(adjacents)
-      if mines.size > 0
-        set_value_at(x, y, mines.size.to_s)
+      if mines.size.positive?
+        set_value_at(coord_x, coord_y, mines.size.to_s)
       else
-        adjacents.each{|cell| clear(cell[0], cell[1])}
+        adjacents.each { |cell| clear(cell[0], cell[1]) }
       end
     end
 
-    def get_adjacents(x, y)
-      @adjacent.execute(x, y)
+    def get_adjacents(coord_x, coord_y)
+      @adjacent.execute(coord_x, coord_y)
     end
 
-    def flag(x, y)
-      return unless valid_coords_and_status?(x,y)
-      if have_flag?(x,y)
-        current_value = get(x,y)
-        new_value = current_value.split("/")[1]
-        set_value_at(x,y,new_value)
-      elsif have_mine?(x,y)
-        set_value_at(x,y,'F/X')
+    def flag(coord_x, coord_y)
+      return unless valid_coords_and_status?(coord_x, coord_y)
+
+      if flag?(coord_x, coord_y)
+        current_value = get(coord_x, coord_y)
+        new_value = current_value.split('/')[1]
+        set_value_at(coord_x, coord_y, new_value)
+      elsif mine?(coord_x, coord_y)
+        set_value_at(coord_x, coord_y, 'F/X')
       else
-        set_value_at(x,y,'F/#')
+        set_value_at(coord_x, coord_y, 'F/#')
       end
       model.save
     end
 
-    def valid_coords_and_status?(x,y)
-      unless @in_bound.true?(x,y)
-        model.errors.add(:base, "coordinates out of bounds")
-      end
-      model.errors.add(:status, "the games is over, you lose") if status == "loser"
-      model.errors.add(:status, "the games is over, you won") if status == "winner"
-
+    def valid_coords_and_status?(coord_x, coord_y)
+      model.errors.add(:base, 'coordinates out of bounds') unless @in_bound.true?(coord_x, coord_y)
+      model.errors.add(:status, 'the games is over, you lose') if status == 'loser'
+      model.errors.add(:status, 'the games is over, you won') if status == 'winner'
       model.errors.empty?
     end
 
@@ -132,44 +132,41 @@ module Mine
       model.time
     end
 
-
     # Check there is not # on the map, that means you win
     def winner?
-      model.map.flatten.find{|d| d == "#"} == nil
+      model.map.flatten.find { |d| d == '#' }.nil?
     end
 
-    def get(x, y)
-      model.map[y][x]
+    def get(coord_x, coord_y)
+      model.map[coord_y][coord_x]
     end
 
-    def have_mine?(x, y)
-      get(x,y).include?('X')
+    def mine?(coord_x, coord_y)
+      get(coord_x, coord_y).include?('X')
     end
 
-    def have_flag?(x,y)
-      get(x,y)[0] == 'F'
+    def flag?(coord_x, coord_y)
+      get(coord_x, coord_y)[0] == 'F'
     end
 
-    def set_value_at(x,y,value)
-      model.map[y][x] = value
+    def set_value_at(coord_x, coord_y, value)
+      model.map[coord_y][coord_x] = value
     end
 
-    def is_clear?(x, y)
-      get(x, y) == ' '
+    def clear?(coord_x, coord_y)
+      get(coord_x, coord_y) == ' '
     end
 
     def get_mines(cells)
-      cells.select{|cell| have_mine?(cell[0], cell[1])}
+      cells.select { |cell| mine?(cell[0], cell[1]) }
     end
 
-    def are_adjacents_emptys?(x, y)
-      all_emptys?(get_adjacents(x, y))
+    def are_adjacents_emptys?(coord_x, coord_y)
+      all_emptys?(get_adjacents(coord_x, coord_y))
     end
 
     def all_emptys?(cells)
-      cells.find{|cell| have_mine?(cell[0], cell[1])} == nil
+      cells.find { |cell| mine?(cell[0], cell[1]) }.nil?
     end
-
-
   end
 end

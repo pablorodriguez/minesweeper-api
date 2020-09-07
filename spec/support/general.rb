@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class GameSpecsHelpers
   class << self
     def get_coords(map, value)
@@ -8,9 +10,7 @@ class GameSpecsHelpers
         x = values.index(value)
         break if x
       end
-      return x, y
+      [x, y]
     end
-
   end
-
 end

@@ -1,27 +1,29 @@
+# frozen_string_literal: true
+
 class MinesweepersController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   before_action :set_user, only: [:create]
-  before_action :set_game, only: [:update, :show]
+  before_action :set_game, only: %i[update show]
 
-  rescue_from ActiveRecord::RecordNotFound do |exception|
-    render json: {error: "Record not found" }, status: 404
+  rescue_from ActiveRecord::RecordNotFound do |_exception|
+    render json: { error: 'Record not found' }, status: 404
   end
 
   def show
-    render json: { game: as_json(@game)}, status: :ok
+    render json: { game: as_json(@game) }, status: :ok
   end
 
   def index
-    @games =  if params[:user_name]
-      Minesweeper.joins(:user).where("users.name like ?", params[:user_name]).order("minesweepers.id desc")
-    else
-      Minesweeper.all.order("id desc")
-    end
+    @games = if params[:user_name]
+               Minesweeper.joins(:user).where('users.name like ?', params[:user_name]).order('minesweepers.id desc')
+             else
+               Minesweeper.all.order('id desc')
+             end
 
     respond_to do |format|
       format.html
-      format.json { render json: { games: as_json(@games)}, status: :ok }
+      format.json { render json: { games: as_json(@games) }, status: :ok }
     end
   end
 
@@ -35,20 +37,20 @@ class MinesweepersController < ApplicationController
   end
 
   def as_json(obj)
-    obj.as_json(only: [:name, :status, :created_at, :updated_at], methods: [:view_map, :time], include: :user)
+    obj.as_json(only: %i[name status created_at updated_at], methods: %i[view_map time], include: :user)
   end
 
   def update
-    result = if (['click', 'flag','stop','play'].include?(params[:perform]))
-      Mine::Game.new(@game).execute(params)
-    else
-      @game.update(game_params)
-    end
+    result = if %w[click flag stop play].include?(params[:perform])
+               Mine::Game.new(@game).execute(params)
+             else
+               @game.update(game_params)
+             end
 
     if result
-      render json: { game: as_json(@game)}, status: :ok
+      render json: { game: as_json(@game) }, status: :ok
     else
-      render json: { errors: @game.errors.full_messages, game: as_json(@game)}, status: :unprocessable_entity
+      render json: { errors: @game.errors.full_messages, game: as_json(@game) }, status: :unprocessable_entity
     end
   end
 

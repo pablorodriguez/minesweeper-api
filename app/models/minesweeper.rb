@@ -1,52 +1,56 @@
+# frozen_string_literal: true
+
 class Minesweeper < ApplicationRecord
   belongs_to :user
   serialize :visited, Hash
   serialize :map, Array
   validates :map, :name, presence: true
-  validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true , greater_than: 0  }
-  validates :name, uniqueness: { scope: :user_id, message: "duplicate within the same user" }
+  validates :max_y, :max_x, :amount_of_mines, numericality: { only_integer: true, greater_than: 0 }
+  validates :name, uniqueness: { scope: :user_id, message: 'duplicate within the same user' }
   before_save :set_time_spend, if: :will_save_change_to_status?
 
   after_initialize do |game|
     game.amount_of_mines ||= 0
     game.time_spend ||= 0
-    game.status ||= "playing"
+    game.status ||= 'playing'
     game.start_play_at ||= Time.now
-    if (game.map.empty? && game.max_x && game.max_y && game.amount_of_mines > 0)
-      game.init_map
-    end
+    game.init_map if game.map.empty? && game.max_x && game.max_y && game.amount_of_mines.positive?
   end
 
   def set_time_spend
-    if status_in_database && status_in_database == 'playing'
-      self.time_spend += playing_time
-      self.start_play_at = Time.now
-    end
+    return unless playing?
+
+    self.time_spend += playing_time
+    self.start_play_at = Time.now
+  end
+
+  def playing?
+    status_in_database && status_in_database == 'playing'
   end
 
   def time
-    status == "playing" ? playing_time : time_spend
+    status == 'playing' ? playing_time : time_spend
   end
 
   def playing_time
-    self.start_play_at ? (((Time.now - self.start_play_at) / 60) + time_spend).round(2) : 0
+    start_play_at ? (((Time.now - start_play_at) / 60) + time_spend).round(2) : 0
   end
 
   # Initialize the map mines on random coords
   def init_map
     new_map = []
-    max_y.times.each{ |t| new_map << Array.new(max_x,'#') }
+    max_y.times.each { |_t| new_map << Array.new(max_x, '#') }
     mines = {}
     amount = amount_of_mines
-    while amount > 0
+    while amount.positive?
       x = rand(max_x).to_i
       y = rand(max_y).to_i
       key = "#{x}##{y}"
-      unless mines[key]
-        new_map[y][x] = 'X'
-        mines[key] = true
-        amount -= 1
-      end
+      next if mines[key]
+
+      new_map[y][x] = 'X'
+      mines[key] = true
+      amount -= 1
     end
 
     self.map = new_map
@@ -83,5 +87,4 @@ class Minesweeper < ApplicationRecord
     end
     n_map
   end
-
 end
