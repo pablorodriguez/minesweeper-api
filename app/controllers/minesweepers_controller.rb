@@ -40,11 +40,7 @@ class MinesweepersController < ApplicationController
 
   def update
     result = if (['click', 'flag','stop','play'].include?(params[:perform]))
-      if params[:x].present? && params[:y].present?
-        @game.send(params[:perform],params[:x].to_i, params[:y].to_i)
-      else
-        @game.send(params[:perform])
-      end
+      Mine::Game.new(@game).execute(params)
     else
       @game.update(game_params)
     end

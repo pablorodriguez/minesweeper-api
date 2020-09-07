@@ -61,29 +61,29 @@ RSpec.describe MinesweepersController, type: :controller do
       patch :update, params: {id: game.name, x:2, y:2, perform: 'flag' }
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
-      n_game = Minesweeper.find(id)
+      n_game = Mine::Game.new(Minesweeper.find(id))
       expect(n_game.get(2,2)).to include('F')
     end
 
     it 'flag over mine' do
       id = game.id
-      x,y = GameSpecsHelpers.get_coords(game, 'X')
+      x,y = GameSpecsHelpers.get_coords(game.map, 'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
-      n_game = Minesweeper.find(id)
+      n_game = Mine::Game.new(Minesweeper.find(id))
       expect(n_game.get(x,y)).to eq('F/X')
     end
 
     it 'un flag over mine' do
       id = game.id
-      x,y = GameSpecsHelpers.get_coords(game,'X')
+      x,y = GameSpecsHelpers.get_coords(game.map,'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
 
       patch :update, params: {id: game.name, x:x, y:y, perform: 'flag' }
-      n_game = Minesweeper.find(id)
+      n_game = Mine::Game.new(Minesweeper.find(id))
       expect(n_game.get(x,y)).to eq('X')
     end
 
@@ -93,7 +93,7 @@ RSpec.describe MinesweepersController, type: :controller do
       expect(parsed_response['game']).not_to be_nil
       expect(response).to have_http_status(200)
       patch :update, params: {id: game.name, x:2, y:2, perform: 'flag' }
-      n_game = Minesweeper.find(id)
+      n_game = Mine::Game.new(Minesweeper.find(id))
       expect(n_game.get(2,2)).not_to include('F')
     end
 
@@ -107,7 +107,7 @@ RSpec.describe MinesweepersController, type: :controller do
 
 
     it 'click over a mine, game over' do
-      x,y = GameSpecsHelpers.get_coords(game,'X')
+      x,y = GameSpecsHelpers.get_coords(game.map,'X')
       patch :update, params: {id: game.name, x:x, y:y, perform: 'click' }
       n_game = parsed_response['game']
 
